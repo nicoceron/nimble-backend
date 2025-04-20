@@ -1,20 +1,22 @@
-package com.nicoceron.nimblev5.domain; // Adjust package name if needed
+package com.nicoceron.nimblev5.domain;
 
 import jakarta.persistence.*;
-import java.util.Date; // Changed import
+import java.util.Date;
 import java.util.Objects;
 
 @Entity
-@Table(name = "TASK") // Match your table name
+@Table(name = "TASK")
+@SequenceGenerator(name = "task_seq_gen",
+        sequenceName = "TASK_SEQ",
+        allocationSize = 1)
 public class Task {
 
     @Id
-    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "task_seq_gen")
     @Column(name = "task_id")
     private Long taskId;
 
-    // Many Tasks belong to One User
-    @ManyToOne(fetch = FetchType.LAZY) // Eager fetching can cause performance issues
+    @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = false)
     private User user;
 
@@ -25,128 +27,51 @@ public class Task {
     private String description;
 
     @Column(name = "due_date")
-    @Temporal(TemporalType.TIMESTAMP) // Specifies mapping to DB TIMESTAMP
-    private Date dueDate; // Changed type to java.util.Date
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date dueDate;
 
-    @Enumerated(EnumType.STRING) // Store enum name ('HIGH', 'MEDIUM', 'LOW')
+    @Enumerated(EnumType.STRING)
     @Column(name = "priority", length = 10)
-    private TaskPriority priority; // Assumes TaskPriority enum exists
+    private TaskPriority priority;
 
-    @Enumerated(EnumType.STRING) // Store enum name ('PENDING', etc.)
+    @Enumerated(EnumType.STRING)
     @Column(name = "status", length = 15)
-    private TaskStatus status; // Assumes TaskStatus enum exists
+    private TaskStatus status;
 
-    @Column(name = "created_date", nullable = false, updatable = false, insertable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    @Temporal(TemporalType.TIMESTAMP) // Specifies mapping to DB TIMESTAMP
-    private Date createdDate; // Changed type to java.util.Date
+    @Column(name = "created_date", nullable = false, updatable = false, insertable = false,
+            columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date createdDate;
 
-    // Let the database trigger handle this
-    @Column(name = "last_modified_date", nullable = false, insertable = false, updatable = false, columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
-    @Temporal(TemporalType.TIMESTAMP) // Specifies mapping to DB TIMESTAMP
-    private Date lastModifiedDate; // Changed type to java.util.Date
+    @Column(name = "last_modified_date", nullable = false, insertable = false, updatable = false,
+            columnDefinition = "TIMESTAMP DEFAULT CURRENT_TIMESTAMP")
+    @Temporal(TemporalType.TIMESTAMP)
+    private Date lastModifiedDate;
 
-    // --- Getters and Setters (Updated for Date) ---
-
-    public Long getTaskId() {
-        return taskId;
-    }
-
-    public void setTaskId(Long taskId) {
-        this.taskId = taskId;
-    }
-
-    public User getUser() {
-        return user;
-    }
-
-    public void setUser(User user) {
-        this.user = user;
-    }
-
-    public String getTitle() {
-        return title;
-    }
-
-    public void setTitle(String title) {
-        this.title = title;
-    }
-
-    public String getDescription() {
-        return description;
-    }
-
-    public void setDescription(String description) {
-        this.description = description;
-    }
-
-    public Date getDueDate() { // Return type changed
-        return dueDate;
-    }
-
-    public void setDueDate(Date dueDate) { // Parameter type changed
-        this.dueDate = dueDate;
-    }
-
-    public TaskPriority getPriority() {
-        return priority;
-    }
-
-    public void setPriority(TaskPriority priority) {
-        this.priority = priority;
-    }
-
-    public TaskStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(TaskStatus status) {
-        this.status = status;
-    }
-
-    public Date getCreatedDate() { // Return type changed
-        return createdDate;
-    }
-
-    public void setCreatedDate(Date createdDate) { // Parameter type changed
-        this.createdDate = createdDate;
-    }
-
-    public Date getLastModifiedDate() { // Return type changed
-        return lastModifiedDate;
-    }
-
-    public void setLastModifiedDate(Date lastModifiedDate) { // Parameter type changed
-        this.lastModifiedDate = lastModifiedDate;
-    }
-
-    // --- equals() and hashCode() ---
+    // Getters and setters (unchanged)
+    public Long getTaskId() { return taskId; }
+    public void setTaskId(Long taskId) { this.taskId = taskId; }
+    public User getUser() { return user; }
+    public void setUser(User user) { this.user = user; }
+    public String getTitle() { return title; }
+    public void setTitle(String title) { this.title = title; }
+    public String getDescription() { return description; }
+    public void setDescription(String description) { this.description = description; }
+    public Date getDueDate() { return dueDate; }
+    public void setDueDate(Date dueDate) { this.dueDate = dueDate; }
+    public TaskPriority getPriority() { return priority; }
+    public void setPriority(TaskPriority priority) { this.priority = priority; }
+    public TaskStatus getStatus() { return status; }
+    public void setStatus(TaskStatus status) { this.status = status; }
+    public Date getCreatedDate() { return createdDate; }
+    public void setCreatedDate(Date createdDate) { this.createdDate = createdDate; }
+    public Date getLastModifiedDate() { return lastModifiedDate; }
+    public void setLastModifiedDate(Date lastModifiedDate) { this.lastModifiedDate = lastModifiedDate; }
 
     @Override
-    public boolean equals(Object o) {
-        if (this == o) return true;
-        if (o == null || getClass() != o.getClass()) return false;
-        Task task = (Task) o;
-        return Objects.equals(taskId, task.taskId);
-    }
-
+    public boolean equals(Object o) { if (this == o) return true; if (o == null || getClass() != o.getClass()) return false; Task task = (Task) o; return Objects.equals(taskId, task.taskId); }
     @Override
-    public int hashCode() {
-        return Objects.hash(taskId);
-    }
-
-    // --- toString() (Optional) ---
-
+    public int hashCode() { return Objects.hash(taskId); }
     @Override
-    public String toString() {
-        return "Task{" +
-                "taskId=" + taskId +
-                ", userId=" + (user != null ? user.getUserId() : null) + // Avoid NPE if user is null
-                ", title='" + title + '\'' +
-                ", dueDate=" + dueDate +
-                ", priority=" + priority +
-                ", status=" + status +
-                ", createdDate=" + createdDate +
-                ", lastModifiedDate=" + lastModifiedDate +
-                '}';
-    }
+    public String toString() { return "Task{" + "taskId=" + taskId + ", userId=" + (user != null ? user.getUserId() : null) + ", title='" + title + '\'' + ", dueDate=" + dueDate + ", priority=" + priority + ", status=" + status + ", createdDate=" + createdDate + ", lastModifiedDate=" + lastModifiedDate + '}'; }
 }

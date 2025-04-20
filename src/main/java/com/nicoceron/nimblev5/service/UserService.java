@@ -43,14 +43,28 @@ public class UserService {
     }
 
     public Optional<User> loginUser(String username, String plainPassword) {
+        System.out.println("Attempting login for username: " + username); // Log input
         Optional<User> userOpt = userDao.findByUsername(username);
         if (userOpt.isPresent()) {
             User user = userOpt.get();
-            // Replace with actual password verification call
-            // if (hashingService.checkPassword(plainPassword, user.getPasswordHash())) {
-            if (checkPasswordPlaceholder(plainPassword, user.getPasswordHash())) { // Replace this placeholder!
+            String storedHash = user.getPasswordHash(); // Get the stored hash
+            System.out.println("Stored hash for user: " + storedHash); // Log hash
+            System.out.println("Password provided for login: " + plainPassword); // Log plain password
+
+            // --- Your Password Check Logic ---
+            boolean passwordMatches = checkPasswordPlaceholder(plainPassword, storedHash); // Or your real check method
+            // --------------------------------
+
+            System.out.println("Password check result: " + passwordMatches); // Log the result
+
+            if (passwordMatches) {
+                System.out.println("Login successful for: " + username);
                 return Optional.of(user);
+            } else {
+                System.out.println("Password mismatch for: " + username);
             }
+        } else {
+            System.out.println("User not found: " + username);
         }
         return Optional.empty(); // Login failed
     }
