@@ -1,6 +1,8 @@
-package com.nicoceron.nimblev5.domain;
+package com.nicoceron.nimblev5.domain; // Ensure package is correct
 
 import jakarta.persistence.*;
+// Add this JAXB import:
+import jakarta.xml.bind.annotation.XmlTransient;
 import java.util.Date;
 import java.util.List;
 import java.util.Objects;
@@ -31,10 +33,11 @@ public class User {
     @Temporal(TemporalType.TIMESTAMP)
     private Date createdDate;
 
+    // This is the relationship causing the cycle when combined with Task.user
     @OneToMany(mappedBy = "user", cascade = CascadeType.ALL, fetch = FetchType.LAZY)
     private List<Task> tasks;
 
-    // Getters and setters (unchanged)
+    // Getters and setters
     public Long getUserId() { return userId; }
     public void setUserId(Long userId) { this.userId = userId; }
     public String getUsername() { return username; }
@@ -45,7 +48,13 @@ public class User {
     public void setPasswordHash(String passwordHash) { this.passwordHash = passwordHash; }
     public Date getCreatedDate() { return createdDate; }
     public void setCreatedDate(Date createdDate) { this.createdDate = createdDate; }
-    public List<Task> getTasks() { return tasks; }
+
+    // *** ADD @XmlTransient HERE ***
+    @XmlTransient // Tell JAXB (XML serializer) to ignore this getter
+    public List<Task> getTasks() {
+        return tasks;
+    }
+
     public void setTasks(List<Task> tasks) { this.tasks = tasks; }
 
     @Override
