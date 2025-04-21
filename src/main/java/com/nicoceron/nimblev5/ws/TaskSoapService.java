@@ -9,51 +9,49 @@ import jakarta.jws.WebMethod;
 import jakarta.jws.WebParam;
 import jakarta.jws.WebService;
 
-import java.sql.Timestamp; // Keep this import if original method uses it
+// Import java.util.Date instead of java.sql.Timestamp for parameters
+import java.sql.Timestamp;
+import java.util.Date;
 import java.util.List;
 
 @WebService(serviceName = "TaskService")
 public class TaskSoapService {
 
     @Inject
-    private TaskService taskService;
+    private TaskService taskService; // NOTE: TaskService must also be updated
 
-    // --- Original method that requires dueDate ---
+    // --- Method modified to use java.util.Date ---
     @WebMethod
     public Task createTask(@WebParam(name = "userId") Long userId,
                            @WebParam(name = "title") String title,
                            @WebParam(name = "description") String description,
-                           @WebParam(name = "dueDate") Timestamp dueDate, // Required here
+                           @WebParam(name = "dueDate") Date dueDate, // Changed type to Date
                            @WebParam(name = "priority") TaskPriority priority) {
         if (userId == null || title == null || title.isEmpty()) {
             throw new IllegalArgumentException("User ID and Title are required.");
         }
-        if (dueDate == null) {
-            // Depending on your backend type mapping, null might cause issues here still
-            // If you only ever call the WithoutDate version, this method might not be used by Android
-            // Or consider changing this parameter to java.util.Date if Timestamp causes issues
-            throw new IllegalArgumentException("Due Date is required for this operation version.");
-        }
-        return taskService.createTask(userId, title, description, dueDate, priority);
+        // Removed the explicit null check for dueDate here,
+        // let the underlying service handle null if appropriate.
+        // Passing null Date should be fine if the DB column allows nulls.
+
+        // IMPORTANT: Assumes taskService.createTask is updated to accept java.util.Date
+        return taskService.createTask(userId, title, description, (Timestamp) dueDate, priority);
     }
 
-    // --- ADDED Overloaded Method without dueDate ---
-    @WebMethod(operationName = "createTaskWithoutDate") // Explicitly name operation
+    // --- Method without dueDate (no changes needed here) ---
+    @WebMethod(operationName = "createTaskWithoutDate")
     public Task createTaskWithoutDate(
             @WebParam(name = "userId") Long userId,
             @WebParam(name = "title") String title,
             @WebParam(name = "description") String description,
-            // No dueDate parameter here
             @WebParam(name = "priority") TaskPriority priority) {
-        // Basic validation
         if (userId == null || title == null || title.isEmpty()) {
             throw new IllegalArgumentException("User ID and Title are required.");
         }
-        // Call the underlying service, passing null for the dueDate
-        // This assumes taskService handles null dueDate gracefully (which it should if DB allows NULL)
+        // IMPORTANT: Assumes taskService.createTask is updated to accept java.util.Date
+        // We are passing null here, which should now be a null java.util.Date
         return taskService.createTask(userId, title, description, null, priority);
     }
-    // --- End of New Method ---
 
     @WebMethod
     public Task getTaskById(@WebParam(name = "taskId") Long taskId) {
@@ -66,15 +64,18 @@ public class TaskSoapService {
         return taskService.findTasksByUserId(userId);
     }
 
+    // --- Method modified to use java.util.Date ---
     @WebMethod
     public Task updateTask(@WebParam(name = "taskId") Long taskId,
                            @WebParam(name = "title") String title,
                            @WebParam(name = "description") String description,
-                           @WebParam(name = "dueDate") Timestamp dueDate,
+                           @WebParam(name = "dueDate") Date dueDate, // Changed type to Date
                            @WebParam(name = "priority") TaskPriority priority,
                            @WebParam(name = "status") TaskStatus status) {
         if (taskId == null) throw new IllegalArgumentException("Task ID is required for update.");
-        return taskService.updateTask(taskId, title, description, dueDate, priority, status);
+
+        // IMPORTANT: Assumes taskService.updateTask is updated to accept java.util.Date
+        return taskService.updateTask(taskId, title, description, (Timestamp) dueDate, priority, status);
     }
 
     @WebMethod
@@ -84,7 +85,6 @@ public class TaskSoapService {
             return true;
         } catch (Exception e) {
             System.err.println("Error deleting task ID " + taskId + ": " + e.getMessage()); // Log error
-            // Consider throwing a specific SOAP Fault Exception
             return false;
         }
     }
